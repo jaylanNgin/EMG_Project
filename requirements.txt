@@ -1,0 +1,4 @@
+pyserial>=3.5
+matplotlib>=3.0
+numpy>=1.20
+pyqt5; platform_system == 'Darwin' or platform_system == 'Linux'
