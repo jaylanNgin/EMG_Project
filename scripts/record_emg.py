@@ -1,20 +1,47 @@
 import serial
 import time
 import os
+from datetime import datetime
 
 # --- CONFIGURATION ---
-SERIAL_PORT = '/dev/cu.usbmodem103'
+SERIAL_PORT = '/dev/cu.usbmodem3103'
 BAUD_RATE = 200000  # Updated to match your new C code
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# Use an absolute path for clarity
-OUTPUT_FILE = os.path.abspath(os.path.join(SCRIPT_DIR, '..', 'data', 'emg_data.txt'))
-# If you want to keep previous captures set APPEND=True
-APPEND = False
+DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, '..', 'data'))
 # ---------------------
 
-mode = 'a' if APPEND else 'w'
+
+def safe_filename(name):
+    cleaned = ''.join(c if c.isalnum() or c in ('-', '_') else '_' for c in name.strip())
+    return cleaned.strip('_')
+
+
+def get_output_file():
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+    default_name = f"emg_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    user_name = input(f"Save this recording as [{default_name}]: ").strip()
+    base_name = safe_filename(user_name) if user_name else default_name
+
+    if not base_name.lower().endswith('.txt'):
+        base_name += '.txt'
+
+    output_file = os.path.abspath(os.path.join(DATA_DIR, base_name))
+    name_root, extension = os.path.splitext(output_file)
+    counter = 2
+
+    while os.path.exists(output_file):
+        output_file = f"{name_root}_{counter}{extension}"
+        counter += 1
+
+    return output_file
+
+
+OUTPUT_FILE = None
 
 try:
+    OUTPUT_FILE = get_output_file()
+
     print(f"Connecting to {SERIAL_PORT} at {BAUD_RATE} baud...")
     # use context manager for auto-close
     with serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1) as ser:
@@ -25,7 +52,7 @@ try:
         print("-" * 40)
 
         # Use a regular file handle and ensure it's closed on exit
-        with open(OUTPUT_FILE, mode) as file:
+        with open(OUTPUT_FILE, 'w') as file:
             while True:
                 if ser.in_waiting > 0:
                     raw_line = ser.readline()
@@ -43,4 +70,5 @@ except serial.SerialException as e:
 except KeyboardInterrupt:
     print("\n\nRecording stopped by user.")
 finally:
-    print(f"Data saved to {OUTPUT_FILE}.")
+    if OUTPUT_FILE:
+        print(f"Data saved to {OUTPUT_FILE}.")

@@ -8,7 +8,7 @@ import os
 import numpy as np
 
 # --- CONFIGURATION ---
-SERIAL_PORT = '/dev/cu.usbmodem103'
+SERIAL_PORT = '/dev/cu.usbmodem3103'
 BAUD_RATE = 200000
 # Set to None to record indefinitely until user stops with Ctrl+C
 DURATION = None

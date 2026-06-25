@@ -10,7 +10,7 @@ import serial
 from pyqtgraph.Qt import QtCore, QtWidgets
 
 # --- CONFIGURATION ---
-SERIAL_PORT = '/dev/cu.usbmodem103'
+SERIAL_PORT = '/dev/cu.usbmodem3103'
 BAUD_RATE = 200000
 # Set to None to record indefinitely until user stops with End/Ctrl+C
 DURATION = None
@@ -451,7 +451,48 @@ class EmgWindow(QtWidgets.QMainWindow):
             self.reader_thread.join(timeout=1.0)
         if self.writer_thread is not None:
             self.writer_thread.join(timeout=1.0)
-        print(f"\nHardware disconnected. Data saved to:\n{os.path.abspath(OUTPUT_FILE)}")
+
+        # Prompt user to choose a filename so trials don't overwrite each other.
+        try:
+            default_dir = os.path.abspath(os.path.join(SCRIPT_DIR, '..', 'data'))
+            os.makedirs(default_dir, exist_ok=True)
+            ts = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+            suggested = f"emg_data_{ts}.txt"
+            default_path = os.path.join(default_dir, suggested)
+
+            save_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self,
+                "Save EMG Data As",
+                default_path,
+                "Text Files (*.txt);;All Files (*)",
+            )
+
+            if save_path:
+                try:
+                    if os.path.exists(OUTPUT_FILE):
+                        os.replace(OUTPUT_FILE, save_path)
+                        final_path = save_path
+                    else:
+                        final_path = save_path
+                except Exception as e:
+                    print(f"[ERROR] Could not move file: {e}")
+                    final_path = os.path.abspath(OUTPUT_FILE)
+            else:
+                # User canceled the dialog - avoid silent overwrite by timestamping the file.
+                if os.path.exists(OUTPUT_FILE):
+                    fallback = os.path.join(default_dir, suggested)
+                    try:
+                        os.replace(OUTPUT_FILE, fallback)
+                        final_path = fallback
+                    except Exception:
+                        final_path = os.path.abspath(OUTPUT_FILE)
+                else:
+                    final_path = os.path.abspath(OUTPUT_FILE)
+        except Exception as e:
+            print(f"[ERROR] save dialog: {e}")
+            final_path = os.path.abspath(OUTPUT_FILE)
+
+        print(f"\nHardware disconnected. Data saved to:\n{final_path}")
         event.accept()
 
 
