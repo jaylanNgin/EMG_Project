@@ -43,6 +43,18 @@ python3 scripts/record_emg.py
 python3 scripts/plot_emg.py
 ```
 
+7. To open one or more saved EMG `.txt` trials in a file picker and plot them together:
+
+```bash
+python3 viewers/view_emg_files.py
+```
+
+Or pass filenames directly:
+
+```bash
+python3 viewers/view_emg_files.py data/Trial1.txt data/Trial2.txt
+```
+
 Notes & tips
 - If plotting at high sample rates is slow, consider installing and using `pyqtgraph` instead of Matplotlib for the live plot.
 - If you see permission errors opening `/dev/cu.*`, try running with `sudo` or add your user to relevant groups (on macOS usually not necessary).
