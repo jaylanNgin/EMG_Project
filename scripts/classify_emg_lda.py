@@ -27,6 +27,7 @@ USAGE
 import argparse
 import os
 import glob
+import time
 import numpy as np
 from typing import List, Tuple
 
@@ -646,6 +647,101 @@ float xmean_init[{n_feat}] = {{
         print("// " + "=" * 58 + "\n")
 
 
+def print_lda_model_stats(lda, scaler=None, pca=None, X_raw_eval=None):
+    """Print LDA parameter count, FLOPs estimate, model size, and runtime."""
+    def _fmt_compact(n: int) -> str:
+        if n >= 1_000_000:
+            return f"{n / 1_000_000:.3f}M"
+        if n >= 1_000:
+            return f"{n / 1_000:.3f}K"
+        return str(n)
+
+    def _print_size_block(title: str, params: int, flops: int):
+        mem_mb = (params * 4) / (1024.0 * 1024.0)
+        print(f"\n{title}")
+        print(f"  Total parameters: {params:,} ({_fmt_compact(params)})")
+        print(f"  Trainable parameters: {params:,} ({_fmt_compact(params)})")
+        print(f"  Approx. parameter memory: {mem_mb:.6f} MB")
+        print(f"  Approx. FLOPs per single-window forward pass: {flops:,} ({_fmt_compact(flops)})")
+
+    coef = np.atleast_2d(np.array(lda.coef_, dtype=float))
+    intercept = np.ravel(np.array(lda.intercept_, dtype=float))
+
+    # Classifier-space dimensions
+    n_scores = coef.shape[0]
+    n_features_cls = coef.shape[1]
+
+    # Raw input feature dimension (before scaler/PCA)
+    if scaler is not None and hasattr(scaler, 'mean_'):
+        n_features_raw = int(np.ravel(scaler.mean_).size)
+    elif pca is not None and hasattr(pca, 'components_'):
+        n_features_raw = int(pca.components_.shape[1])
+    else:
+        n_features_raw = n_features_cls
+
+    params_classifier = int(coef.size + intercept.size)
+
+    params_preproc = 0
+    if scaler is not None and hasattr(scaler, 'mean_') and hasattr(scaler, 'scale_'):
+        params_preproc += int(np.ravel(scaler.mean_).size + np.ravel(scaler.scale_).size)
+    if pca is not None and hasattr(pca, 'components_'):
+        params_preproc += int(pca.components_.size)
+        if hasattr(pca, 'mean_'):
+            params_preproc += int(np.ravel(pca.mean_).size)
+
+    params_total = params_classifier + params_preproc
+
+    # FLOPs per sample (rough estimate)
+    flops_classifier = int(n_scores * (2 * n_features_cls))
+
+    flops_preproc = 0
+    if scaler is not None:
+        # (x - mean) / std per feature
+        flops_preproc += int(2 * n_features_raw)
+    if pca is not None and hasattr(pca, 'components_'):
+        n_comp = int(pca.components_.shape[0])
+        # PCA transform per sample: center + matrix multiply
+        flops_preproc += int(n_features_raw + n_comp * (2 * n_features_raw - 1))
+
+    flops_total = flops_classifier + flops_preproc
+
+    _print_size_block("Model size (LDA classifier)", params_classifier, flops_classifier)
+
+    # STM32 exported representation in this project (binary only):
+    # Wg_init has +/- symmetric columns and Cg_init has +/- biases.
+    n_classes = int(len(getattr(lda, 'classes_', []))) if hasattr(lda, 'classes_') else 0
+    if n_classes == 2 and scaler is not None:
+        params_export_classifier = int(2 * n_features_raw + 2)  # Wg_init + Cg_init
+        flops_export_classifier = int(2 * (2 * n_features_raw))
+
+        _print_size_block(
+            "Model size (STM32 fused classifier)",
+            params_export_classifier,
+            flops_export_classifier,
+        )
+
+    # Runtime benchmark (vectorized; representative host-side estimate)
+    if X_raw_eval is not None and len(X_raw_eval) > 0:
+        X_raw_eval = np.asarray(X_raw_eval, dtype=float)
+        reps = max(20, min(500, int(40000 / max(1, X_raw_eval.shape[0]))))
+
+        # Classifier-only timing: assume already in classifier feature space
+        X_cls = X_raw_eval
+        if scaler is not None:
+            X_cls = (X_cls - scaler.mean_) / scaler.scale_
+        if pca is not None:
+            X_cls = pca.transform(X_cls)
+
+        t0 = time.perf_counter()
+        for _ in range(reps):
+            _ = lda.decision_function(X_cls)
+        t1 = time.perf_counter()
+        us_cls = ((t1 - t0) / (reps * X_cls.shape[0])) * 1e6
+
+        print("  Runtime (host, estimated):")
+        print(f"    Classifier only: {us_cls:.4f} us/sample")
+
+
 # ── MAIN ──────────────────────────────────────────────────────────────────────
 
 def main():
@@ -762,6 +858,7 @@ def main():
         test_data = None
 
     if test_data is None:
+        X_raw = X.copy()
         if args.skip_cv:
             print("\n[--skip-cv] Skipping cross-validation. Training on full dataset (no held-out test).")
             # Just train on all data without CV
@@ -858,6 +955,8 @@ def main():
                     sample_size=X.shape[0],
                 )
 
+            print_lda_model_stats(lda=lda, scaler=scaler, pca=(pca if args.pca else None), X_raw_eval=X_raw)
+
             plt.show()
             return
         
@@ -949,11 +1048,14 @@ def main():
         print(f'\nLDA Intercept: {lda.intercept_}')
         print(f'LDA Classes: {lda.classes_}')
 
+        print_lda_model_stats(lda=lda, scaler=scaler, pca=(pca if args.pca else None), X_raw_eval=X_raw)
+
         plot_confusion_matrix(y, y_pred, classes, eval_label=f'{CV_FOLDS}-fold CV')
         plot_lda_projection(X, y, lda, le)
         plt.show()
     else:
         X_train, y_train, X_test, y_test = test_data
+        X_test_raw = X_test.copy()
 
         if args.legacy_c_compatible:
             X_train_scaled, legacy_mean, legacy_std = mapstd_fit_transform(X_train)
@@ -1060,6 +1162,8 @@ def main():
                 dataset_name="ResultClipSizeUp900",
                 sample_size=900,
             )
+
+        print_lda_model_stats(lda=lda, scaler=scaler, pca=(pca if args.pca else None), X_raw_eval=X_test_raw)
 
         plot_confusion_matrix(y_test, y_pred, classes, eval_label='Held-out test set')
         plot_lda_projection(X_train, y_train, lda, le, X_test=X_test, y_test=y_test)
