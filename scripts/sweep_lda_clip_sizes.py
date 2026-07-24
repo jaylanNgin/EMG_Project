@@ -57,6 +57,8 @@ def build_dataset(dataset_dir):
 
     if not feature_sets:
         raise ValueError(f"No usable .txt recordings found in {dataset_dir}")
+    if set(labels) != {"act1", "act2"}:
+        raise ValueError(f"Both act1 and act2 .txt recordings are required in {dataset_dir}")
 
     return np.vstack(feature_sets), np.asarray(labels), np.asarray(groups)
 
@@ -104,12 +106,19 @@ def main():
     print(f"{'Clip size':>9}  {'Windows':>7}  {'Window CV':>10}  {'Trial CV':>9}")
     print("-" * 43)
     for size, path in sorted(candidates):
-        windows, window_accuracy, grouped_accuracy = evaluate(path)
+        try:
+            windows, window_accuracy, grouped_accuracy = evaluate(path)
+        except (ValueError, OSError) as error:
+            print(f"{size:>9}  {'skipped':>7}  {str(error)}")
+            continue
         results.append((window_accuracy, grouped_accuracy, windows, size))
         print(
             f"{size:>9}  {windows:>7}  "
             f"{window_accuracy:>9.1%}  {grouped_accuracy:>8.1%}"
         )
+
+    if not results:
+        parser.error(f"No valid two-class datasets found in {args.subject_dir}")
 
     best = max(results, key=lambda row: (row[0], row[1], row[2]))
     print(

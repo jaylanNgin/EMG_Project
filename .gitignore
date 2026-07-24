@@ -12,3 +12,6 @@ data/*.txt
 # ResultClipSizeUp* datasets. Keep them local to avoid bloating the repository.
 Subject2GloveOff/**/*.avi
 Subject2GloveOn/**/*.avi
+subjectFast/**/*.avi
+SubjectNorm/**/*.avi
+SubjectSlow/**/*.avi

@@ -13,8 +13,20 @@ case "$MODE" in
     SUBJECT_DIR="Subject2GloveOn"
     BEST_SIZE=300
     ;;
+  fast|FAST|Fast)
+    SUBJECT_DIR="subjectFast"
+    BEST_SIZE=300
+    ;;
+  norm|NORM|Norm|normal|NORMAL|Normal)
+    SUBJECT_DIR="SubjectNorm"
+    BEST_SIZE=200
+    ;;
+  slow|SLOW|Slow)
+    SUBJECT_DIR="SubjectSlow"
+    BEST_SIZE=250
+    ;;
   *)
-    echo "Usage: $0 <on|off>"
+    echo "Usage: $0 <off|on|fast|norm|slow>"
     exit 2
     ;;
 esac

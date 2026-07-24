@@ -60,7 +60,7 @@ Notes & tips
 - If you see permission errors opening `/dev/cu.*`, try running with `sudo` or add your user to relevant groups (on macOS usually not necessary).
 - If the serial port doesn't open, confirm your STM32 firmware serial settings and that no other application (CoolTerm, screen) is connected.
 
-## Raspberry Pi: Subject 2 LDA
+## Raspberry Pi: LDA datasets
 
 Clone the `new-features` branch and install the LDA-only dependencies:
 
@@ -77,6 +77,9 @@ Re-run the complete clip-size comparison:
 ```bash
 python scripts/sweep_lda_clip_sizes.py Subject2GloveOff
 python scripts/sweep_lda_clip_sizes.py Subject2GloveOn
+python scripts/sweep_lda_clip_sizes.py subjectFast
+python scripts/sweep_lda_clip_sizes.py SubjectNorm
+python scripts/sweep_lda_clip_sizes.py SubjectSlow
 ```
 
 Run LDA with the best clip sizes found in the comparison:
@@ -84,6 +87,9 @@ Run LDA with the best clip sizes found in the comparison:
 ```bash
 ./scripts/run_subject2_lda.sh off  # ResultClipSizeUp200
 ./scripts/run_subject2_lda.sh on   # ResultClipSizeUp300
+./scripts/run_subject2_lda.sh fast # ResultClipSizeUp300
+./scripts/run_subject2_lda.sh norm # ResultClipSizeUp200
+./scripts/run_subject2_lda.sh slow # ResultClipSizeUp250
 ```
 
 The runner defaults to Matplotlib's headless backend so it works over SSH. To
