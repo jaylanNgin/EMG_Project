@@ -67,7 +67,7 @@ Clone the `new-features` branch and install the LDA-only dependencies:
 ```bash
 git clone --branch new-features https://github.com/jaylanNgin/EMG_Project.git
 cd EMG_Project
-chmod +x scripts/setup_raspberry_pi.sh scripts/run_subject2_lda.sh
+chmod +x scripts/setup_raspberry_pi.sh scripts/run_lda.sh
 ./scripts/setup_raspberry_pi.sh
 source .venv/bin/activate
 ```
@@ -85,16 +85,19 @@ python scripts/sweep_lda_clip_sizes.py SubjectSlow
 Run LDA with the best clip sizes found in the comparison:
 
 ```bash
-./scripts/run_subject2_lda.sh off  # ResultClipSizeUp200
-./scripts/run_subject2_lda.sh on   # ResultClipSizeUp300
-./scripts/run_subject2_lda.sh fast # ResultClipSizeUp300
-./scripts/run_subject2_lda.sh norm # ResultClipSizeUp200
-./scripts/run_subject2_lda.sh slow # ResultClipSizeUp250
+# Subject 1
+./scripts/run_lda.sh subject1-fast # ResultClipSizeUp300
+./scripts/run_lda.sh subject1-norm # ResultClipSizeUp200
+./scripts/run_lda.sh subject1-slow # ResultClipSizeUp250
+
+# Subject 2
+./scripts/run_lda.sh subject2-off  # ResultClipSizeUp200
+./scripts/run_lda.sh subject2-on   # ResultClipSizeUp300
 ```
 
 The runner defaults to Matplotlib's headless backend so it works over SSH. To
 show the confusion-matrix window on a Pi desktop, run:
 
 ```bash
-MPLBACKEND=TkAgg ./scripts/run_subject2_lda.sh on
+MPLBACKEND=TkAgg ./scripts/run_lda.sh subject2-on
 ```
