@@ -1,36 +1,33 @@
 // ============================================================
 // Auto-generated LDA model for STM32
-// mode: multipletrain_prune:baseline
 // dataset: /Users/jaylanngin/Desktop/EMG_Project/ResultClipSizeUp900
-// sample_size: 900
-// split_type: alternate
-// train_percent: 80
-// test_percent: 20
-// train_accuracy: 86.76%
-// test_accuracy: 88.24%
-// prune_trials_per_label: 7
-// generated: 2026-07-16 10:21:47
+// train_folder: /Users/jaylanngin/Desktop/EMG_Project/ResultClipSizeUp900/Train
+// test_folder: /Users/jaylanngin/Desktop/EMG_Project/ResultClipSizeUp900/Test
+// split: existing Train/Test folders
+// train_accuracy_percent: 86.76
+// test_accuracy_percent: 88.24
+// generated: 2026-07-16 10:34:51
 // num_class: 2
 // feature_dim: 12
 // ============================================================
 
 float Wg_init[24] = {
-    -0.595550, 0.595578,
-    0.304063, -0.304079,
-    -0.119331, 0.119311,
-    -0.697221, 0.697230,
-    -1.970640, 1.970703,
-    1.279915, -1.279991,
-    0.501754, -0.501743,
-    -0.024682, 0.024682,
-    0.433260, -0.433292,
-    -0.523250, 0.523281,
-    0.509097, -0.509099,
-    0.506211, -0.506218,
+    -0.595703, 0.595732,
+    0.304206, -0.304223,
+    -0.119265, 0.119245,
+    -0.697226, 0.697234,
+    -1.971303, 1.971365,
+    1.280531, -1.280605,
+    0.501793, -0.501783,
+    -0.024700, 0.024700,
+    0.433356, -0.433388,
+    -0.523327, 0.523358,
+    0.509141, -0.509142,
+    0.506212, -0.506219,
 };
 
 float Cg_init[2] = {
-    -1.352587, -1.352596
+    -0.659479, -0.659488
 };
 
 float xstd_init[12] = {

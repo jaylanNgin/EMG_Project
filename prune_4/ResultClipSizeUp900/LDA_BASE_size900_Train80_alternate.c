@@ -8,7 +8,7 @@
 // test_percent: 20
 // train_accuracy: 86.76%
 // test_accuracy: 88.24%
-// prune_trials_per_label: 7
+// prune_trials_per_label: 4
 // generated: 2026-07-16 10:21:47
 // num_class: 2
 // feature_dim: 12

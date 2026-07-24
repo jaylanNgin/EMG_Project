@@ -1,0 +1,23 @@
+============================================================
+PRUNE REPORT  (Train 80% / Test 20%)
+Prune trials per label   : 5
+Root folder (original)   : /Users/jaylanngin/Desktop/EMG_Project
+Prune root (output sets) : /Users/jaylanngin/Desktop/EMG_Project/prune_5
+Only sample sizes <= 1100 are used.
+============================================================
+SampleSize	BaseTrain(%)	BaseTest(%)	PrunedTrain(%)	PrunedTest(%)
+
+# Object-level cut summary (1-10=obj1, 11-20=obj2, ...):
+#   Label act2:
+#     Object 1: removed 5/8 = 62.5% (trials removed: [1, 2, 4, 5, 10])
+#   Label act1:
+#     Object 1: removed 5/8 = 62.5% (trials removed: [1, 2, 3, 6, 10])
+900	86.76	88.24	99.02	95.59
+# Dataset: ResultClipSizeUp900
+# Removed trials from copy:
+#   act2: act2/trial_10.txt, act2/trial_1.txt, act2/trial_4.txt, act2/trial_5.txt, act2/trial_2.txt
+#   act1: act1/trial_3.txt, act1/trial_1.txt, act1/trial_6.txt, act1/trial_10.txt, act1/trial_2.txt
+
+# Saved accuracy plot: /Users/jaylanngin/Desktop/EMG_Project/prune_5/Accuracy_vs_SampleSize_Train80_Prune5.png
+
+=== End of prune run ===

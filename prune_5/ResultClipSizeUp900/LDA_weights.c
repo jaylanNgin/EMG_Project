@@ -1,18 +1,10 @@
-// ============================================================
-// Auto-generated LDA model for STM32
-// mode: multipletrain_prune:baseline
+// Auto-generated LDA weights
 // dataset: /Users/jaylanngin/Desktop/EMG_Project/ResultClipSizeUp900
-// sample_size: 900
-// split_type: alternate
-// train_percent: 80
-// test_percent: 20
 // train_accuracy: 86.76%
 // test_accuracy: 88.24%
-// prune_trials_per_label: 7
-// generated: 2026-07-16 10:21:47
+// generated: 2026-07-16 10:20:57
 // num_class: 2
 // feature_dim: 12
-// ============================================================
 
 float Wg_init[24] = {
     -0.595550, 0.595578,
