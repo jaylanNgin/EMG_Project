@@ -59,3 +59,36 @@ Notes & tips
 - If plotting at high sample rates is slow, consider installing and using `pyqtgraph` instead of Matplotlib for the live plot.
 - If you see permission errors opening `/dev/cu.*`, try running with `sudo` or add your user to relevant groups (on macOS usually not necessary).
 - If the serial port doesn't open, confirm your STM32 firmware serial settings and that no other application (CoolTerm, screen) is connected.
+
+## Raspberry Pi: Subject 2 LDA
+
+Clone the `new-features` branch and install the LDA-only dependencies:
+
+```bash
+git clone --branch new-features https://github.com/jaylanNgin/EMG_Project.git
+cd EMG_Project
+chmod +x scripts/setup_raspberry_pi.sh scripts/run_subject2_lda.sh
+./scripts/setup_raspberry_pi.sh
+source .venv/bin/activate
+```
+
+Re-run the complete clip-size comparison:
+
+```bash
+python scripts/sweep_lda_clip_sizes.py Subject2GloveOff
+python scripts/sweep_lda_clip_sizes.py Subject2GloveOn
+```
+
+Run LDA with the best clip sizes found in the comparison:
+
+```bash
+./scripts/run_subject2_lda.sh off  # ResultClipSizeUp200
+./scripts/run_subject2_lda.sh on   # ResultClipSizeUp300
+```
+
+The runner defaults to Matplotlib's headless backend so it works over SSH. To
+show the confusion-matrix window on a Pi desktop, run:
+
+```bash
+MPLBACKEND=TkAgg ./scripts/run_subject2_lda.sh on
+```

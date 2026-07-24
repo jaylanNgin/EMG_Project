@@ -7,3 +7,8 @@ venv/
 
 # Captured EMG recordings can get large and are local experiment data.
 data/*.txt
+
+# Videos are not used by the EMG classifiers and are duplicated across
+# ResultClipSizeUp* datasets. Keep them local to avoid bloating the repository.
+Subject2GloveOff/**/*.avi
+Subject2GloveOn/**/*.avi
